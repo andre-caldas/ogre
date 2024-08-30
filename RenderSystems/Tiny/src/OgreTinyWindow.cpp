@@ -8,7 +8,7 @@
 #include "OgreStringConverter.h"
 
 #include "OgreComponents.h"
-#if OGRE_BITES_HAVE_SDL
+#if defined(OGRE_BITES_HAVE_SDL) && (OGRE_BITES_HAVE_SDL == 2)
 #include <SDL.h>
 #endif
 
@@ -44,7 +44,7 @@ void TinyWindow::resize(uint width, uint height)
 
 void TinyWindow::swapBuffers()
 {
-#if OGRE_BITES_HAVE_SDL
+#if defined(OGRE_BITES_HAVE_SDL) && (OGRE_BITES_HAVE_SDL == 2)
     if(!mParentWindow)
         return;
 

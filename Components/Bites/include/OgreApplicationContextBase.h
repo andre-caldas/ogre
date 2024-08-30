@@ -120,7 +120,7 @@ namespace OgreBites
         virtual bool windowClosing(Ogre::RenderWindow* rw) { return true; }
         virtual void windowClosed(Ogre::RenderWindow* rw) {}
         virtual void windowFocusChange(Ogre::RenderWindow* rw) {}
-        virtual uint32_t getWindowID(NativeWindowType* /*w*/) { return 0; }
+        virtual uint32_t getWindowID(NativeWindowType* window) = 0;
 
         /**
          * inspect the event and call one of the corresponding functions on the registered InputListener
@@ -233,7 +233,7 @@ namespace OgreBites
          * @param lis the listener
          * @param win the window to receive the events for.
          */
-        virtual void addInputListener(NativeWindowType* win, InputListener* lis);
+        void addInputListener(NativeWindowType* win, InputListener* lis);
 
         /// @overload
         void addInputListener(InputListener* lis) {
@@ -246,7 +246,7 @@ namespace OgreBites
          * @param lis the listener
          * @param win the window to receive the events for.
          */
-        virtual void removeInputListener(NativeWindowType* win, InputListener* lis);
+        void removeInputListener(NativeWindowType* win, InputListener* lis);
 
         /// @overload
         void removeInputListener(InputListener* lis) {

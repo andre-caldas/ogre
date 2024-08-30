@@ -44,6 +44,7 @@ public:
 
     QWindow* getWindowPtr(NativeWindowType* window);
     QWindow* getWindowPtr(NativeWindowPair& p) { return getWindowPtr(p.native); }
+    uint32_t getWindowID(NativeWindowType* window) override;
 
     NativeWindowPair
     createWindow(const Ogre::String& name, uint32_t w = 0, uint32_t h = 0,
@@ -74,13 +75,7 @@ public:
     void useQtEventLoop(bool enable) { mQtEventLoop = enable; }
 
     using ApplicationContextBase::setWindowGrab;
-
     void setWindowGrab(NativeWindowType* win, bool grab) override;
-
-    using ApplicationContextBase::addInputListener;
-    using ApplicationContextBase::removeInputListener;
-    void addInputListener(NativeWindowType* win, InputListener* lis) override;
-    void removeInputListener(NativeWindowType* win, InputListener* lis) override;
 
     void pollEvents() override;
     void shutdown() override;

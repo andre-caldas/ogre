@@ -32,25 +32,28 @@
 
 #ifdef OGRE_BITES_HAVE_SDL
 
-#include "OgreApplicationContextSDL.h"
-namespace OgreBites {
-  typedef ApplicationContextSDL ApplicationContext;
-}
+  #if OGRE_BITES_HAVE_SDL == 3
+    #include "OgreApplicationContextSDL3.h"
+    namespace OgreBites {
+      typedef ApplicationContextSDL3 ApplicationContext;
+    }
+  #else
+    #include "OgreApplicationContextSDL.h"
+    namespace OgreBites {
+      typedef ApplicationContextSDL ApplicationContext;
+    }
+  #endif
 
 #elif OGRE_PLATFORM == OGRE_PLATFORM_ANDROID
-
-#include "OgreApplicationContextAndroid.h"
-namespace OgreBites {
-  typedef ApplicationContextAndroid ApplicationContext;
-}
-
+  #include "OgreApplicationContextAndroid.h"
+  namespace OgreBites {
+    typedef ApplicationContextAndroid ApplicationContext;
+  }
 #else
-
-#include "OgreApplicationContextDummy.h"
-namespace OgreBites {
-  typedef ApplicationContextDummy ApplicationContext;
-}
-
+  #include "OgreApplicationContextDummy.h"
+  namespace OgreBites {
+    typedef ApplicationContextDummy ApplicationContext;
+  }
 #endif
 
 #endif

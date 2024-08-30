@@ -107,6 +107,7 @@ namespace Ogre {
         if (mGLDisplay)
         {
             eglTerminate(mGLDisplay);
+            mGLDisplay = 0;
         }
     }
 

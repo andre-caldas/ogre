@@ -102,7 +102,10 @@ set(SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreTrays.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreWindowEventUtilities.cpp")
 
-if(SDL2_FOUND OR EMSCRIPTEN)
+if(SDL3_FOUND OR EMSCRIPTEN)
+  list(APPEND HEADER_FILES  "${CMAKE_CURRENT_SOURCE_DIR}/include/OgreApplicationContextSDL3.h")
+  list(APPEND SOURCES  "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreApplicationContextSDL3.cpp")
+elseif(SDL2_FOUND)
   list(APPEND HEADER_FILES  "${CMAKE_CURRENT_SOURCE_DIR}/include/OgreApplicationContextSDL.h")
   list(APPEND SOURCES  "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreApplicationContextSDL.cpp")
 elseif(ANDROID)
@@ -182,7 +185,9 @@ if(OGRE_USE_WAYLAND)
   target_compile_definitions(OgreBites PRIVATE OGRE_WAYLAND)
 endif()
 
-if(SDL2_FOUND)
+if(SDL3_FOUND)
+  target_link_libraries(OgreBites PRIVATE SDL3::SDL3)
+elseif(SDL2_FOUND)
   target_link_libraries(OgreBites PRIVATE SDL2::SDL2)
 elseif(NOT EMSCRIPTEN)
   message(WARNING "SDL2 not found - no input handling and reduced window creation capabilites")

@@ -13,12 +13,6 @@
 
 namespace OgreBites {
 
-ApplicationContextAndroid::ApplicationContextAndroid(const Ogre::String& appName) : ApplicationContextBase(appName)
-{
-    mAAssetMgr = NULL;
-    mAConfig = NULL;
-}
-
 NativeWindowPair ApplicationContextAndroid::createWindow(const Ogre::String& name, Ogre::uint32 w, Ogre::uint32 h, Ogre::NameValuePairList miscParams)
 {
     miscParams["externalWindowHandle"] = Ogre::StringConverter::toString(reinterpret_cast<size_t>(mWindows[0].native));

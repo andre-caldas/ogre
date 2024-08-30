@@ -15,24 +15,16 @@
 
 namespace OgreBites {
 
-ApplicationContextSDL::ApplicationContextSDL(const Ogre::String& appName) : ApplicationContextBase(appName)
+SDL_Window* ApplicationContextSDL::getWindowPtr(NativeWindowType* window)
 {
-}
-
-SDL_Window* ApplicationContextSDL::getWindowPtr(NativeWindowType* window) {
     return static_cast<SDL_Window*>(window);
 }
 
-void ApplicationContextSDL::addInputListener(NativeWindowType* win, InputListener* lis)
+uint32_t ApplicationContextSDL::getWindowID(NativeWindowType* window)
 {
-    mInputListeners.insert(std::make_pair(SDL_GetWindowID(getWindowPtr(win)), lis));
+    return SDL_GetWindowID(getWindowPtr(window));
 }
 
-
-void ApplicationContextSDL::removeInputListener(NativeWindowType* win, InputListener* lis)
-{
-    mInputListeners.erase(std::make_pair(SDL_GetWindowID(getWindowPtr(win)), lis));
-}
 
 NativeWindowPair ApplicationContextSDL::createWindow(const Ogre::String& name, Ogre::uint32 w, Ogre::uint32 h, Ogre::NameValuePairList miscParams)
 {

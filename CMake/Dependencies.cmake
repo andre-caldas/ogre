@@ -329,14 +329,25 @@ endif()
 # Find sdl2
 if(NOT ANDROID AND NOT EMSCRIPTEN)
   # find script does not work in cross compilation environment
-  find_package(SDL2 QUIET)
-  macro_log_feature(SDL2_FOUND "SDL2" "Simple DirectMedia Library needed for input handling in samples" "https://www.libsdl.org/")
-  if(SDL2_FOUND AND NOT TARGET SDL2::SDL2)
-    add_library(SDL2::SDL2 INTERFACE IMPORTED)
-    set_target_properties(SDL2::SDL2 PROPERTIES
+  find_package(SDL3 QUIET)
+  macro_log_feature(SDL3_FOUND "SDL3" "SDL3 not found... will try SDL2" "https://www.libsdl.org/")
+  if(SDL3_FOUND AND NOT TARGET SDL3::SDL3)
+    add_library(SDL3::SDL3 INTERFACE IMPORTED)
+    set_target_properties(SDL3::SDL3 PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${SDL3_INCLUDE_DIRS}"
+      INTERFACE_LINK_LIBRARIES "${SDL3_LIBRARIES}"
+    )
+  endif()
+  if(NOT SDL3_FOUND)
+    find_package(SDL2 QUIET)
+    macro_log_feature(SDL2_FOUND "SDL2" "Simple DirectMedia Library needed for input handling in samples" "https://www.libsdl.org/")
+    if(SDL2_FOUND AND NOT TARGET SDL2::SDL2)
+      add_library(SDL2::SDL2 INTERFACE IMPORTED)
+      set_target_properties(SDL2::SDL2 PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIRS}"
         INTERFACE_LINK_LIBRARIES "${SDL2_LIBRARIES}"
-    )
+      )
+    endif()
   endif()
 
   find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui QUIET CONFIG)

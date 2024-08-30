@@ -78,6 +78,7 @@ WaylandEGLSupport::~WaylandEGLSupport()
     if (mGLDisplay)
     {
         eglTerminate(mGLDisplay);
+        mGLDisplay = 0;
     }
 }
 

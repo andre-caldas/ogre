@@ -37,6 +37,8 @@ namespace OgreBites
     public:
         using ApplicationContextBase::ApplicationContextBase;
 
+        uint32_t getWindowID(NativeWindowType* window) override {return 0;}
+
         /**
         process all window events since last call
         */

@@ -381,6 +381,7 @@ namespace Ogre {
         {
             eglTerminate(mGLDisplay);
             EGL_CHECK_ERROR
+            mGLDisplay = 0;
         }
     }
 

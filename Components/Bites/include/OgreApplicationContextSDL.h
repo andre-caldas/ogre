@@ -51,8 +51,9 @@ namespace OgreBites
         void _destroyWindow(const NativeWindowPair& win) override;
 
     public:
-        explicit ApplicationContextSDL(const Ogre::String& appName = "Ogre3D");
+        using ApplicationContextBase::ApplicationContextBase;
 
+        uint32_t getWindowID(NativeWindowType* window) override;
         SDL_Window* getWindowPtr(NativeWindowType* window);
         SDL_Window* getWindowPtr(NativeWindowPair& p) { return getWindowPtr(p.native); }
 
@@ -60,15 +61,11 @@ namespace OgreBites
         float getDisplayDPI() const override;
         void shutdown() override;
         void pollEvents() override;
-        void addInputListener(NativeWindowType* win, InputListener* lis) override;
-        void removeInputListener(NativeWindowType* win, InputListener* lis) override;
         NativeWindowPair
         createWindow(const Ogre::String& name, uint32_t w = 0, uint32_t h = 0,
                      Ogre::NameValuePairList miscParams = Ogre::NameValuePairList()) override;
 
         using ApplicationContextBase::setWindowGrab;
-        using ApplicationContextBase::addInputListener;
-        using ApplicationContextBase::removeInputListener;
     };
     /** @} */
     /** @} */

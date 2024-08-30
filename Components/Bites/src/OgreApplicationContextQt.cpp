@@ -118,8 +118,14 @@ namespace OgreBites
         return out;
     }
 
-    QWindow* ApplicationContextQt::getWindowPtr(NativeWindowType* window) {
+    QWindow* ApplicationContextQt::getWindowPtr(NativeWindowType* window)
+    {
         return static_cast<QWindow*>(window);
+    }
+
+    uint32_t ApplicationContextQt::getWindowID(NativeWindowType* window)
+    {
+        return getWindowPtr(window)->winId();
     }
 
     NativeWindowPair ApplicationContextQt::createWindow(QWindow* window, Ogre::NameValuePairList miscParams)
@@ -184,17 +190,6 @@ namespace OgreBites
 
         win->show();
         return ret;
-    }
-
-    void ApplicationContextQt::addInputListener(NativeWindowType* win, InputListener* lis)
-    {
-        mInputListeners.insert(std::make_pair(getWindowPtr(win)->winId(), lis));
-    }
-
-
-    void ApplicationContextQt::removeInputListener(NativeWindowType* win, InputListener* lis)
-    {
-        mInputListeners.erase(std::make_pair(getWindowPtr(win)->winId(), lis));
     }
 
     void ApplicationContextQt::pollEvents()

@@ -25,19 +25,16 @@
  THE SOFTWARE.
  -----------------------------------------------------------------------------
  */
-#ifndef __ApplicationContextAndroid_H__
-#define __ApplicationContextAndroid_H__
+#ifndef __ApplicationContextSDL3_H__
+#define __ApplicationContextSDL3_H__
 
 #include "OgreBitesPrerequisites.h"
 #include "OgreBuildSettings.h"
 #include "OgreApplicationContextBase.h"
 
-#include <android/configuration.h>
-#include <android/asset_manager.h>
-#include <android/native_window.h>
-#include <android/input.h>
-
 #include "OgreInput.h"
+
+extern "C" struct SDL_Window;
 
 namespace OgreBites
 {
@@ -47,27 +44,28 @@ namespace OgreBites
     /** \addtogroup Bites
     *  @{
     */
-    class _OgreBitesExport ApplicationContextAndroid : public ApplicationContextBase
+
+    class _OgreBitesExport ApplicationContextSDL3 : public ApplicationContextBase
     {
+    protected:
+        void _destroyWindow(const NativeWindowPair& win) override;
+
     public:
         using ApplicationContextBase::ApplicationContextBase;
 
-        uint32_t getWindowID(NativeWindowType* window) override {return 0;}
+        uint32_t getWindowID(NativeWindowType* window) override;
+        SDL_Window* getWindowPtr(NativeWindowType* window);
+        SDL_Window* getWindowPtr(NativeWindowPair& p) { return getWindowPtr(p.native); }
 
-        void initAppForAndroid(AAssetManager* assetMgr, ANativeWindow* window);
-        void _fireInputEventAndroid(AInputEvent* event, int wheel = 0);
-
-        void locateResources() override;
+        void setWindowGrab(NativeWindowType* win, bool grab) override;
+        float getDisplayDPI() const override;
         void shutdown() override;
         void pollEvents() override;
-
         NativeWindowPair
         createWindow(const Ogre::String& name, uint32_t w = 0, uint32_t h = 0,
                      Ogre::NameValuePairList miscParams = Ogre::NameValuePairList()) override;
 
-    protected:
-        AAssetManager* mAAssetMgr = NULL;
-        AConfiguration* mAConfig  = NULL;
+        using ApplicationContextBase::setWindowGrab;
     };
     /** @} */
     /** @} */
