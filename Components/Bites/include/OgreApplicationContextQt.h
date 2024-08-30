@@ -42,6 +42,9 @@ public:
     {
     }
 
+    QWindow* getWindowPtr(NativeWindowType* window);
+    QWindow* getWindowPtr(NativeWindowPair& p) { return getWindowPtr(p.native); }
+
     NativeWindowPair
     createWindow(const Ogre::String& name, uint32_t w = 0, uint32_t h = 0,
                  Ogre::NameValuePairList miscParams = Ogre::NameValuePairList()) override;

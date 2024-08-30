@@ -94,6 +94,7 @@ list(APPEND HEADER_FILES
 set(SOURCES 
   "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreAdvancedRenderControls.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreApplicationContextBase.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreApplicationContextDummy.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreBitesConfigDialog.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreCameraMan.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreSGTechniqueResolverListener.cpp"
@@ -102,8 +103,10 @@ set(SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreWindowEventUtilities.cpp")
 
 if(SDL2_FOUND OR EMSCRIPTEN)
+  list(APPEND HEADER_FILES  "${CMAKE_CURRENT_SOURCE_DIR}/include/OgreApplicationContextSDL.h")
   list(APPEND SOURCES  "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreApplicationContextSDL.cpp")
 elseif(ANDROID)
+  list(APPEND HEADER_FILES  "${CMAKE_CURRENT_SOURCE_DIR}/include/OgreApplicationContextAndroid.h")
   list(APPEND SOURCES  "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreApplicationContextAndroid.cpp")
 endif()
 

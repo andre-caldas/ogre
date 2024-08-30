@@ -25,32 +25,33 @@
  THE SOFTWARE.
  -----------------------------------------------------------------------------
  */
-#ifndef __ApplicationContext_H__
-#define __ApplicationContext_H__
+#ifndef __ApplicationContextDummy_H__
+#define __ApplicationContextDummy_H__
 
-#include "OgreComponents.h"
+#include "OgreApplicationContextBase.h"
 
-#ifdef OGRE_BITES_HAVE_SDL
+namespace OgreBites
+{
+    class _OgreBitesExport ApplicationContextDummy : public ApplicationContextBase
+    {
+    public:
+        using ApplicationContextBase::ApplicationContextBase;
 
-#include "OgreApplicationContextSDL.h"
-namespace OgreBites {
-  typedef ApplicationContextSDL ApplicationContext;
+        /**
+        process all window events since last call
+        */
+        void pollEvents() override;
+
+        /**
+         * Create a new render window
+         *
+         * By default the values from ogre.cfg are used for w, h and miscParams.
+         */
+        NativeWindowPair
+        createWindow(const Ogre::String& name, uint32_t w = 0, uint32_t h = 0,
+                     Ogre::NameValuePairList miscParams = Ogre::NameValuePairList()) override;
+
+        void _destroyWindow(const NativeWindowPair& win) override;
+    };
 }
-
-#elif OGRE_PLATFORM == OGRE_PLATFORM_ANDROID
-
-#include "OgreApplicationContextAndroid.h"
-namespace OgreBites {
-  typedef ApplicationContextAndroid ApplicationContext;
-}
-
-#else
-
-#include "OgreApplicationContextDummy.h"
-namespace OgreBites {
-  typedef ApplicationContextDummy ApplicationContext;
-}
-
-#endif
-
 #endif

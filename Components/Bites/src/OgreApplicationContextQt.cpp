@@ -118,6 +118,10 @@ namespace OgreBites
         return out;
     }
 
+    QWindow* ApplicationContextQt::getWindowPtr(NativeWindowType* window) {
+        return static_cast<QWindow*>(window);
+    }
+
     NativeWindowPair ApplicationContextQt::createWindow(QWindow* window, Ogre::NameValuePairList miscParams)
     {
         OgreAssert(QGuiApplication::instance(), "you must create a QGuiApplication first");
@@ -126,15 +130,8 @@ namespace OgreBites
             QGuiApplication::instance()->installEventFilter(this);
         }
 
-        auto p = mRoot->getRenderSystem()->getRenderWindowDescription();
-        miscParams.insert(p.miscParams.begin(), p.miscParams.end());
-        p.miscParams = miscParams;
-        p.name = window->title().toStdString();
-        p.width = window->width();
-        p.height= window->height();
-
         if (QGuiApplication::platformName() != "wayland") {
-          p.miscParams["externalWindowHandle"] = std::to_string(size_t(window->winId()));
+          miscParams["externalWindowHandle"] = std::to_string(size_t(window->winId()));
         }
 
         if (QGuiApplication::platformName() == "wayland")
@@ -152,27 +149,18 @@ namespace OgreBites
             void* display = nativeInterface->nativeResourceForWindow("display", nullptr);
             void* surface = nativeInterface->nativeResourceForWindow("surface", window);
 
-            p.miscParams["externalWlDisplay"] = Ogre::StringConverter::toString(size_t(display));
-            p.miscParams["externalWlSurface"] = Ogre::StringConverter::toString(size_t(surface));
+            miscParams["externalWlDisplay"] = Ogre::StringConverter::toString(size_t(display));
+            miscParams["externalWlSurface"] = Ogre::StringConverter::toString(size_t(surface));
 #endif
         }
-        if (!mWindows.empty())
-        {
-            // additional windows should reuse the context
-            p.miscParams["currentGLContext"] = "true";
-        }
 
-        NativeWindowPair ret;
-        ret.native = (NativeWindowType*)window;
-        ret.render = mRoot->createRenderWindow(p);
-        mWindows.push_back(ret);
-
-        return ret;
+        return _createWindow(window, window->title().toStdString(),
+            window->width(), window->height(), std::move(miscParams));
     }
 
     void ApplicationContextQt::setWindowGrab(NativeWindowType* win, bool grab)
     {
-        grab ? ((QWindow*)win)->setCursor(Qt::BlankCursor) : ((QWindow*)win)->unsetCursor();
+        grab ? getWindowPtr(win)->setCursor(Qt::BlankCursor) : getWindowPtr(win)->unsetCursor();
     }
 
     NativeWindowPair ApplicationContextQt::createWindow(const Ogre::String& name, uint32_t w, uint32_t h,
@@ -183,35 +171,30 @@ namespace OgreBites
             return createWindow(mWindowOverride, miscParams);
         }
 
-        auto p = mRoot->getRenderSystem()->getRenderWindowDescription();
-        if(w > 0 && h > 0)
-        {
-            p.width = w;
-            p.height= h;
-        }
-
         QWindow* win = new QWindow();
         win->setTitle(QString::fromStdString(name));
-        win->resize(p.width, p.height);
+        win->resize(w, h);
 
-        if(p.useFullScreen){
+        auto ret = createWindow(win, miscParams);
+
+        auto p = mRoot->getRenderSystem()->getRenderWindowDescription();
+        if(p.useFullScreen) {
            win->showFullScreen();
         }
 
-        auto ret = createWindow(win, miscParams);
         win->show();
         return ret;
     }
 
     void ApplicationContextQt::addInputListener(NativeWindowType* win, InputListener* lis)
     {
-        mInputListeners.insert(std::make_pair(((QWindow*)win)->winId(), lis));
+        mInputListeners.insert(std::make_pair(getWindowPtr(win)->winId(), lis));
     }
 
 
     void ApplicationContextQt::removeInputListener(NativeWindowType* win, InputListener* lis)
     {
-        mInputListeners.erase(std::make_pair(((QWindow*)win)->winId(), lis));
+        mInputListeners.erase(std::make_pair(getWindowPtr(win)->winId(), lis));
     }
 
     void ApplicationContextQt::pollEvents()
@@ -244,7 +227,7 @@ namespace OgreBites
         case QEvent::UpdateRequest:
             for(auto & window : mWindows)
             {
-                if(w->winId() != ((QWindow*)window.native)->winId())
+                if(w->winId() != getWindowPtr(window.native)->winId())
                     continue;
                 window.render->update();
             }
@@ -252,7 +235,7 @@ namespace OgreBites
         case QEvent::Resize:
             for(auto & window : mWindows)
             {
-                if(w->winId() != ((QWindow*)window.native)->winId())
+                if(w->winId() != getWindowPtr(window.native)->winId())
                     continue;
 
                 Ogre::RenderWindow* win = window.render;

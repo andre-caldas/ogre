@@ -41,27 +41,16 @@
 #include "OgreSGTechniqueResolverListener.h"
 #endif // INCLUDE_RTSHADER_SYSTEM
 
-// forward declarations
-extern "C" struct SDL_Window;
-
 namespace Ogre {
     class OverlaySystem;
     class ImGuiOverlay;
 }
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_ANDROID
-#include <android/native_window.h>
-#endif
-
 #include "OgreInput.h"
 
 namespace OgreBites
 {
-#if OGRE_PLATFORM == OGRE_PLATFORM_ANDROID
-    typedef ANativeWindow NativeWindowType;
-#else
-    typedef SDL_Window NativeWindowType;
-#endif
+    typedef void NativeWindowType;
 
     /** \addtogroup Optional Optional Components
     *  @{
@@ -131,6 +120,7 @@ namespace OgreBites
         virtual bool windowClosing(Ogre::RenderWindow* rw) { return true; }
         virtual void windowClosed(Ogre::RenderWindow* rw) {}
         virtual void windowFocusChange(Ogre::RenderWindow* rw) {}
+        virtual uint32_t getWindowID(NativeWindowType* /*w*/) { return 0; }
 
         /**
          * inspect the event and call one of the corresponding functions on the registered InputListener
@@ -213,7 +203,7 @@ namespace OgreBites
         /**
         process all window events since last call
         */
-        virtual void pollEvents();
+        virtual void pollEvents() = 0;
 
         /**
         Creates dummy scene to allow rendering GUI in viewport.
@@ -267,14 +257,15 @@ namespace OgreBites
         /**
          * Create a new render window
          *
-         * You must use SDL and not an auto-created window as SDL does not get the events
-         * otherwise.
-         *
          * By default the values from ogre.cfg are used for w, h and miscParams.
          */
         virtual NativeWindowPair
         createWindow(const Ogre::String& name, uint32_t w = 0, uint32_t h = 0,
-                     Ogre::NameValuePairList miscParams = Ogre::NameValuePairList());
+                     Ogre::NameValuePairList miscParams = Ogre::NameValuePairList()) = 0;
+
+        NativeWindowPair
+        _createWindow(NativeWindowType* win, const Ogre::String& name, uint32_t w, uint32_t h,
+                     Ogre::NameValuePairList miscParams);
 
         /// destroy and erase an NativeWindowPair by name
         void destroyWindow(const Ogre::String& name);

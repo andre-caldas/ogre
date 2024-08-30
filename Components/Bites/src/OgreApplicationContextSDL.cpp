@@ -2,7 +2,7 @@
 // It is subject to the license terms in the LICENSE file found in the top-level directory
 // of this distribution and at https://www.ogre3d.org/licensing.
 
-#include "OgreApplicationContext.h"
+#include "OgreApplicationContextSDL.h"
 
 #include "OgreRoot.h"
 #include "OgreRenderWindow.h"
@@ -19,21 +19,23 @@ ApplicationContextSDL::ApplicationContextSDL(const Ogre::String& appName) : Appl
 {
 }
 
+SDL_Window* ApplicationContextSDL::getWindowPtr(NativeWindowType* window) {
+    return static_cast<SDL_Window*>(window);
+}
+
 void ApplicationContextSDL::addInputListener(NativeWindowType* win, InputListener* lis)
 {
-    mInputListeners.insert(std::make_pair(SDL_GetWindowID(win), lis));
+    mInputListeners.insert(std::make_pair(SDL_GetWindowID(getWindowPtr(win)), lis));
 }
 
 
 void ApplicationContextSDL::removeInputListener(NativeWindowType* win, InputListener* lis)
 {
-    mInputListeners.erase(std::make_pair(SDL_GetWindowID(win), lis));
+    mInputListeners.erase(std::make_pair(SDL_GetWindowID(getWindowPtr(win)), lis));
 }
 
 NativeWindowPair ApplicationContextSDL::createWindow(const Ogre::String& name, Ogre::uint32 w, Ogre::uint32 h, Ogre::NameValuePairList miscParams)
 {
-    NativeWindowPair ret = {NULL, NULL};
-
     if(!SDL_WasInit(SDL_INIT_VIDEO)) {
         if(SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt") > 0)
             Ogre::LogManager::getSingleton().logMessage("[SDL] gamecontrollerdb.txt loaded");
@@ -41,78 +43,66 @@ NativeWindowPair ApplicationContextSDL::createWindow(const Ogre::String& name, O
         SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
     }
 
+    // Unfortunately, there is no nice way to determine if the created window
+    // is supposed to be "full screen" or "reisizable".
+    // TODO: implement some sort of ApplicationContextBase::isFullScreen().
     auto p = mRoot->getRenderSystem()->getRenderWindowDescription();
-    miscParams.insert(p.miscParams.begin(), p.miscParams.end());
-    p.miscParams = miscParams;
-    p.name = name;
-
-    if(w > 0 && h > 0)
-    {
-        p.width = w;
-        p.height= h;
-    }
-
     int flags = p.useFullScreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_RESIZABLE;
+
+    // There is also no nice way to determine the "monitorIndex".
+    miscParams.insert(p.miscParams.begin(), p.miscParams.end());
     int d = Ogre::StringConverter::parseInt(miscParams["monitorIndex"], 1) - 1;
-    ret.native =
-        SDL_CreateWindow(p.name.c_str(), SDL_WINDOWPOS_UNDEFINED_DISPLAY(d),
-                         SDL_WINDOWPOS_UNDEFINED_DISPLAY(d), p.width, p.height, flags);
+    auto native =
+        SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_UNDEFINED_DISPLAY(d),
+                         SDL_WINDOWPOS_UNDEFINED_DISPLAY(d), w, h, flags);
 
 #if OGRE_PLATFORM != OGRE_PLATFORM_EMSCRIPTEN
     SDL_SysWMinfo wmInfo;
     SDL_VERSION(&wmInfo.version);
-    SDL_GetWindowWMInfo(ret.native, &wmInfo);
+    SDL_GetWindowWMInfo(native, &wmInfo);
 #endif
 
     // for tiny rendersystem
-    p.miscParams["sdlwin"] = Ogre::StringConverter::toString(size_t(ret.native));
+    miscParams["sdlwin"] = Ogre::StringConverter::toString(size_t(native));
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
     if (wmInfo.subsystem == SDL_SYSWM_WAYLAND)
     {
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
         Ogre::LogManager::getSingleton().logMessage("[SDL] Creating Wayland window");
-        p.miscParams["externalWlDisplay"] = Ogre::StringConverter::toString(size_t(wmInfo.info.wl.display));
-        p.miscParams["externalWlSurface"] = Ogre::StringConverter::toString(size_t(wmInfo.info.wl.surface));
+        miscParams["externalWlDisplay"] = Ogre::StringConverter::toString(size_t(wmInfo.info.wl.display));
+        miscParams["externalWlSurface"] = Ogre::StringConverter::toString(size_t(wmInfo.info.wl.surface));
 #endif
     }
     else if (wmInfo.subsystem == SDL_SYSWM_X11)
     {
 #ifdef SDL_VIDEO_DRIVER_X11
         Ogre::LogManager::getSingleton().logMessage("[SDL] Creating X11 window");
-        p.miscParams["externalWindowHandle"] = Ogre::StringConverter::toString(size_t(wmInfo.info.x11.window));
+        miscParams["externalWindowHandle"] = Ogre::StringConverter::toString(size_t(wmInfo.info.x11.window));
 #endif
     }
 #elif OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-    p.miscParams["externalWindowHandle"] = Ogre::StringConverter::toString(size_t(wmInfo.info.win.window));
+    miscParams["externalWindowHandle"] = Ogre::StringConverter::toString(size_t(wmInfo.info.win.window));
 #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
     assert(wmInfo.subsystem == SDL_SYSWM_COCOA);
-    p.miscParams["externalWindowHandle"] = Ogre::StringConverter::toString(size_t(wmInfo.info.cocoa.window));
+    miscParams["externalWindowHandle"] = Ogre::StringConverter::toString(size_t(wmInfo.info.cocoa.window));
 #endif
 
-    if(!mWindows.empty())
-    {
-        // additional windows should reuse the context
-        p.miscParams["currentGLContext"] = "true";
-    }
-
-    ret.render = mRoot->createRenderWindow(p);
-    mWindows.push_back(ret);
-    return ret;
+    return _createWindow(native, name, w, h, std::move(miscParams));
 }
 
 void ApplicationContextSDL::_destroyWindow(const NativeWindowPair& win)
 {
     ApplicationContextBase::_destroyWindow(win);
     if(win.native)
-        SDL_DestroyWindow(win.native);
+        SDL_DestroyWindow(getWindowPtr(win.native));
 }
 
 void ApplicationContextSDL::setWindowGrab(NativeWindowType* win, bool _grab)
 {
     SDL_bool grab = SDL_bool(_grab);
 
-    SDL_SetWindowGrab(win, grab);
+    SDL_SetWindowGrab(getWindowPtr(win), grab);
 #if OGRE_PLATFORM != OGRE_PLATFORM_APPLE
     // osx workaround: mouse motion events are gone otherwise
     SDL_SetRelativeMouseMode(grab);
@@ -162,7 +152,7 @@ void ApplicationContextSDL::pollEvents()
 
             for(auto & window : mWindows)
             {
-                if(event.window.windowID != SDL_GetWindowID(window.native))
+                if(event.window.windowID != SDL_GetWindowID(getWindowPtr(window.native)))
                     continue;
 
                 Ogre::RenderWindow* win = window.render;

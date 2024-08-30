@@ -25,32 +25,49 @@
  THE SOFTWARE.
  -----------------------------------------------------------------------------
  */
-#ifndef __ApplicationContext_H__
-#define __ApplicationContext_H__
+#ifndef __ApplicationContextAndroid_H__
+#define __ApplicationContextAndroid_H__
 
-#include "OgreComponents.h"
+#include "OgreBitesPrerequisites.h"
+#include "OgreBuildSettings.h"
+#include "OgreApplicationContextBase.h"
 
-#ifdef OGRE_BITES_HAVE_SDL
+#include <android/configuration.h>
+#include <android/asset_manager.h>
+#include <android/native_window.h>
+#include <android/input.h>
 
-#include "OgreApplicationContextSDL.h"
-namespace OgreBites {
-  typedef ApplicationContextSDL ApplicationContext;
+#include "OgreInput.h"
+
+namespace OgreBites
+{
+    /** \addtogroup Optional
+    *  @{
+    */
+    /** \addtogroup Bites
+    *  @{
+    */
+    class _OgreBitesExport ApplicationContextAndroid : public ApplicationContextBase
+    {
+    public:
+        explicit ApplicationContextAndroid(const Ogre::String& appName = "Ogre3D");
+
+        void initAppForAndroid(AAssetManager* assetMgr, ANativeWindow* window);
+        void _fireInputEventAndroid(AInputEvent* event, int wheel = 0);
+
+        void locateResources() override;
+        void shutdown() override;
+        void pollEvents() override;
+
+        NativeWindowPair
+        createWindow(const Ogre::String& name, uint32_t w = 0, uint32_t h = 0,
+                     Ogre::NameValuePairList miscParams = Ogre::NameValuePairList()) override;
+
+    protected:
+        AAssetManager* mAAssetMgr;
+        AConfiguration* mAConfig;
+    };
+    /** @} */
+    /** @} */
 }
-
-#elif OGRE_PLATFORM == OGRE_PLATFORM_ANDROID
-
-#include "OgreApplicationContextAndroid.h"
-namespace OgreBites {
-  typedef ApplicationContextAndroid ApplicationContext;
-}
-
-#else
-
-#include "OgreApplicationContextDummy.h"
-namespace OgreBites {
-  typedef ApplicationContextDummy ApplicationContext;
-}
-
-#endif
-
 #endif

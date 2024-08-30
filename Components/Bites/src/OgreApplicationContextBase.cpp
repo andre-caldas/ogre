@@ -13,7 +13,6 @@
 #include "OgreOverlaySystem.h"
 #include "OgreDataStream.h"
 #include "OgreBitesConfigDialog.h"
-#include "OgreWindowEventUtilities.h"
 #include "OgreSceneNode.h"
 #include "OgreCamera.h"
 
@@ -365,9 +364,10 @@ bool ApplicationContextBase::frameRenderingQueued(const Ogre::FrameEvent& evt)
     return true;
 }
 
-NativeWindowPair ApplicationContextBase::createWindow(const Ogre::String& name, Ogre::uint32 w, Ogre::uint32 h, Ogre::NameValuePairList miscParams)
+NativeWindowPair ApplicationContextBase::_createWindow(NativeWindowType* win, const Ogre::String& name, Ogre::uint32 w, Ogre::uint32 h, Ogre::NameValuePairList miscParams)
 {
-    NativeWindowPair ret = {NULL, NULL};
+    NativeWindowPair ret;
+    ret.native = win;
 
     if(!mWindows.empty())
     {
@@ -387,11 +387,7 @@ NativeWindowPair ApplicationContextBase::createWindow(const Ogre::String& name, 
     }
 
     ret.render = mRoot->createRenderWindow(p);
-
     mWindows.push_back(ret);
-
-    WindowEventUtilities::_addRenderWindow(ret.render);
-
     return ret;
 }
 
@@ -411,10 +407,6 @@ void ApplicationContextBase::destroyWindow(const Ogre::String& name)
 
 void ApplicationContextBase::_destroyWindow(const NativeWindowPair& win)
 {
-#if !OGRE_BITES_HAVE_SDL
-    // remove window event listener before destroying it
-    WindowEventUtilities::_removeRenderWindow(win.render);
-#endif
     mRoot->destroyRenderTarget(win.render);
 }
 
@@ -648,12 +640,6 @@ void ApplicationContextBase::shutdown()
     }
 
     mInputListeners.clear();
-}
-
-void ApplicationContextBase::pollEvents()
-{
-    // just avoid "window not responding"
-    WindowEventUtilities::messagePump();
 }
 
 }
