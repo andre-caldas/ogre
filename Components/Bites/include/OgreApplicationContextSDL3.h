@@ -35,6 +35,7 @@
 #include "OgreInput.h"
 
 extern "C" struct SDL_Window;
+union SDL_Event;
 
 namespace OgreBites
 {
@@ -60,12 +61,25 @@ namespace OgreBites
         void setWindowGrab(NativeWindowType* win, bool grab) override;
         float getDisplayDPI() const override;
         void shutdown() override;
+
+        /**
+         * SDL3 separates frame events and regular events,
+         * instead of polling events each frame start.
+         * Call setNoEventPolling() to make pollEvents() do nothing.
+         * Each event should be processed individually using processOneEvent().
+         */
+        void setNoEventPolling() { mShallPollEvents = false; }
         void pollEvents() override;
+        void processOneEvent(SDL_Event& event);
+
         NativeWindowPair
         createWindow(const Ogre::String& name, uint32_t w = 0, uint32_t h = 0,
                      Ogre::NameValuePairList miscParams = Ogre::NameValuePairList()) override;
 
         using ApplicationContextBase::setWindowGrab;
+
+    private:
+        bool mShallPollEvents = true;
     };
     /** @} */
     /** @} */

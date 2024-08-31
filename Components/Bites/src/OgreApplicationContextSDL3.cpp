@@ -123,6 +123,10 @@ void ApplicationContextSDL3::shutdown()
 
 void ApplicationContextSDL3::pollEvents()
 {
+    if(!mShallPollEvents) {
+        return;
+    }
+
     if(mWindows.empty())
     {
         // SDL events not initialized
@@ -132,40 +136,44 @@ void ApplicationContextSDL3::pollEvents()
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        switch (event.type)
-        {
-        case SDL_EVENT_QUIT:
-            mRoot->queueEndRendering();
-            break;
-        case SDL_EVENT_WINDOW_RESIZED:
-            for(auto & window : mWindows)
-            {
-                if(event.window.windowID != SDL_GetWindowID(getWindowPtr(window.native)))
-                    continue;
+        processOneEvent(event);
+    }
+}
 
-                Ogre::RenderWindow* win = window.render;
-                win->resize(event.window.data1, event.window.data2);
-                windowResized(win);
-            }
-            break;
-        case SDL_EVENT_JOYSTICK_ADDED:
-            if(!SDL_IsGamepad(event.cdevice.which))
-            {
-                SDL_OpenJoystick(event.cdevice.which);
-                Ogre::LogManager::getSingleton().logMessage("Opened Joystick");
-            }
-            break;
-        case SDL_EVENT_GAMEPAD_ADDED:
-            if(auto c = SDL_OpenGamepad(event.cdevice.which))
-            {
-                const char* name = SDL_GetGamepadName(c);
-                Ogre::LogManager::getSingleton().stream() << "Opened Gamepad: " << (name ? name : "unnamed");
-            }
-            break;
-        default:
-            _fireInputEvent(convert(event), event.window.windowID);
-            break;
+void ApplicationContextSDL3::processOneEvent(SDL_Event& event)
+{
+    switch (event.type)
+    {
+    case SDL_EVENT_QUIT:
+        mRoot->queueEndRendering();
+        break;
+    case SDL_EVENT_WINDOW_RESIZED:
+        for(auto & window : mWindows)
+        {
+            if(event.window.windowID != SDL_GetWindowID(getWindowPtr(window.native)))
+                continue;
+
+            Ogre::RenderWindow* win = window.render;
+            win->resize(event.window.data1, event.window.data2);
+            windowResized(win);
         }
+        break;
+    case SDL_EVENT_JOYSTICK_ADDED:
+        if(!SDL_IsGamepad(event.cdevice.which))
+        {
+            SDL_OpenJoystick(event.cdevice.which);
+            Ogre::LogManager::getSingleton().logMessage("Opened Joystick");
+        }
+        break;
+    case SDL_EVENT_GAMEPAD_ADDED:
+        if(auto c = SDL_OpenGamepad(event.cdevice.which))
+        {
+            const char* name = SDL_GetGamepadName(c);
+            Ogre::LogManager::getSingleton().stream() << "Opened Gamepad: " << (name ? name : "unnamed");
+        }
+        break;
+    default:
+        _fireInputEvent(convert(event), event.window.windowID);
     }
 }
 
