@@ -123,10 +123,6 @@ void ApplicationContextSDL3::shutdown()
 
 void ApplicationContextSDL3::pollEvents()
 {
-    if(!mShallPollEvents) {
-        return;
-    }
-
     if(mWindows.empty())
     {
         // SDL events not initialized
@@ -140,7 +136,7 @@ void ApplicationContextSDL3::pollEvents()
     }
 }
 
-void ApplicationContextSDL3::processOneEvent(SDL_Event& event)
+void ApplicationContextSDL3::processOneEvent(const SDL_Event& event)
 {
     switch (event.type)
     {

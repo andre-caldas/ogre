@@ -377,7 +377,7 @@ NativeWindowPair ApplicationContextBase::_createWindow(NativeWindowType* win, co
 
     auto p = mRoot->getRenderSystem()->getRenderWindowDescription();
     miscParams.insert(p.miscParams.begin(), p.miscParams.end());
-    p.miscParams = miscParams;
+    p.miscParams = std::move(miscParams);
     p.name = name;
 
     if(w > 0 && h > 0)

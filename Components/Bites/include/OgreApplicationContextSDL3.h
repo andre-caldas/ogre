@@ -32,8 +32,6 @@
 #include "OgreBuildSettings.h"
 #include "OgreApplicationContextBase.h"
 
-#include "OgreInput.h"
-
 extern "C" struct SDL_Window;
 union SDL_Event;
 
@@ -63,23 +61,24 @@ namespace OgreBites
         void shutdown() override;
 
         /**
+         * Process events.
+         *
+         * @attention
          * SDL3 separates frame events and regular events,
          * instead of polling events each frame start.
-         * Call setNoEventPolling() to make pollEvents() do nothing.
-         * Each event should be processed individually using processOneEvent().
+         * In this case, you should override pollEvents()
+         * to not process input events.
+         * But since you will have a separated rendering thread,
+         * you shall probably process thread stop requests.
          */
-        void setNoEventPolling() { mShallPollEvents = false; }
         void pollEvents() override;
-        void processOneEvent(SDL_Event& event);
+        void processOneEvent(const SDL_Event& event);
 
         NativeWindowPair
         createWindow(const Ogre::String& name, uint32_t w = 0, uint32_t h = 0,
                      Ogre::NameValuePairList miscParams = Ogre::NameValuePairList()) override;
 
         using ApplicationContextBase::setWindowGrab;
-
-    private:
-        bool mShallPollEvents = true;
     };
     /** @} */
     /** @} */
