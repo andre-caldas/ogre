@@ -124,12 +124,7 @@ namespace Ogre
         
         bool mReadBackAsTexture;
 
-        D3D11HLSLProgram* mBoundVertexProgram;
-        D3D11HLSLProgram* mBoundFragmentProgram;
-        D3D11HLSLProgram* mBoundGeometryProgram;
-        D3D11HLSLProgram* mBoundTessellationHullProgram;
-        D3D11HLSLProgram* mBoundTessellationDomainProgram;
-        D3D11HLSLProgram* mBoundComputeProgram;
+        std::array<D3D11HLSLProgram*, GPT_COUNT> mBoundProgram;
 
         ComPtr<ID3D11ShaderResourceView> mDSTResView;
         ComPtr<ID3D11BlendState> mBoundBlendState;
@@ -259,12 +254,6 @@ namespace Ogre
         void setStencilState(const StencilState& state) override;
 
         // Low-level overridden members, mainly for internal use
-        D3D11HLSLProgram* _getBoundVertexProgram() const;
-        D3D11HLSLProgram* _getBoundFragmentProgram() const;
-        D3D11HLSLProgram* _getBoundGeometryProgram() const;
-        D3D11HLSLProgram* _getBoundTessellationHullProgram() const;
-        D3D11HLSLProgram* _getBoundTessellationDomainProgram() const;
-        D3D11HLSLProgram* _getBoundComputeProgram() const;
         void _setTexture(size_t unit, bool enabled, const TexturePtr &texPtr);
         void _setSampler(size_t unit, Sampler& sampler);
         void _setAlphaRejectSettings( CompareFunction func, unsigned char value, bool alphaToCoverage );

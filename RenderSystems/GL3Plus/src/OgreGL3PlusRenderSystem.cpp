@@ -1003,6 +1003,16 @@ namespace Ogre {
             LogManager::getSingleton().logError("Failed to create shader program.");
         }
 
+        bool hasMeshShader = mCurrentShader[GPT_MESH_PROGRAM] != 0;
+        if(hasMeshShader)
+        {
+            for(auto it : op.vertexData->vertexBufferBinding->getBindings())
+            {
+                auto buf = it.second->_getImpl<GL3PlusHardwareBuffer>();
+                buf->setGLBufferBinding(it.first + 3, GL_SHADER_STORAGE_BUFFER);
+            }
+        }
+
         GLVertexArrayObject* vao =
             static_cast<GLVertexArrayObject*>(op.vertexData->vertexDeclaration);
         // Bind VAO (set of per-vertex attributes: position, normal, etc.).
@@ -1110,7 +1120,7 @@ namespace Ogre {
                 //                OGRE_CHECK_GL_ERROR(glDrawArraysInstanced(GL_PATCHES, 0, primCount, 1));
             }
         }
-        else if (mCurrentShader[GPT_MESH_PROGRAM])
+        else if (hasMeshShader)
         {
             OgreAssert(op.indexData, "indexData required for mesh shader");
 
@@ -1638,12 +1648,18 @@ namespace Ogre {
             params->_updateSharedParams();
         }
 
+        auto paramsSize = params->getConstantList().size();
+        if (paramsSize && getCapabilities()->hasCapability(RSC_SEPARATE_SHADER_OBJECTS) &&
+            !params->hasLogicalIndexedParameters())
+        {
+            auto& ubo = updateDefaultUniformBuffer(gptype, params->getConstantList());
+
+            int binding = gptype == GPT_COMPUTE_PROGRAM ? 0 : (int(gptype) % GPT_PIPELINE_COUNT);
+            static_cast<GL3PlusHardwareBuffer*>(ubo.get())->setGLBufferBinding(binding);
+        }
+
         // Pass on parameters from params to program object uniforms.
         program->updateUniforms(params, mask, gptype);
-
-        // FIXME This needs to be moved somewhere texture specific.
-        // Update image bindings for image load/store
-        // static_cast<GL3PlusTextureManager*>(mTextureManager)->bindImages();
     }
 
     void GL3PlusRenderSystem::beginProfileEvent( const String &eventName )

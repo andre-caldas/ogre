@@ -32,8 +32,6 @@ THE SOFTWARE.
 //  being aware of the 3D API. However there are a few
 //  simple functions which can have a base implementation
 
-#include "OgreRenderTarget.h"
-#include "OgreDepthBuffer.h"
 #include "OgreHardwareOcclusionQuery.h"
 #include "OgreComponents.h"
 
@@ -138,6 +136,18 @@ namespace Ogre {
         mFixedFunctionParams->setAutoConstant(light_offset + 5, GpuProgramParameters::ACT_SPOTLIGHT_PARAMS, index);
     }
 
+    const HardwareBufferPtr& RenderSystem::updateDefaultUniformBuffer(GpuProgramType gptype, const ConstantList& params)
+    {
+        auto& ubo = mUniformBuffer[gptype];
+        if (!ubo || ubo->getSizeInBytes() < params.size())
+        {
+            ubo = HardwareBufferManager::getSingleton().createUniformBuffer(params.size());
+        }
+
+        ubo->writeData(0, params.size(), params.data(), true);
+
+        return ubo;
+    }
     //-----------------------------------------------------------------------
     RenderSystem::~RenderSystem()
     {
