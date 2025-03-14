@@ -49,10 +49,11 @@ namespace Ogre
 
         MTLTextureType getMetalTextureTarget(void) const;
         void createMetalTexResource(void);
-        void createSurfaceList(void);
+        HardwarePixelBufferPtr createSurface(uint32 face, uint32 mipmap, uint32 width, uint32 height,
+                                             uint32 depth) override;
 
-        virtual void createInternalResourcesImpl(void);
-        virtual void freeInternalResourcesImpl(void);
+        void createInternalResourcesImpl(void) override;
+        void freeInternalResourcesImpl(void) override;
 
     public:
         MetalTexture( ResourceManager* creator, const String& name, ResourceHandle handle,
